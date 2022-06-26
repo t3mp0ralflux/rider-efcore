@@ -21,8 +21,7 @@ namespace Rider.Plugins.EfCore.Migrations
 
             var migrationLongName = migrationAttribute.PositionParameter(0).ConstantValue.Value as string;
 
-            var dbContextClass = dbContextAttribute.PositionParameter(0).TypeValue?.GetScalarType()?
-                .GetClrName();
+            var dbContextClass = dbContextAttribute.PositionParameter(0).TypeValue?.GetScalarType()?.GetClrName();
 
             if (migrationLongName is null || dbContextClass is null)
             {
@@ -33,11 +32,19 @@ namespace Rider.Plugins.EfCore.Migrations
                 .FirstOrDefault()
                 .GetLocation().Directory.FileAccessPath;
 
+            var language = @class.PresentationLanguage.Name switch
+            {
+                "CSHARP" => Language.CSharp,
+                "FSharp" => Language.FSharp,
+                _ => Language.Unknown
+            };
+
             return new MigrationInfo(
                 dbContextClass.FullName,
                 migrationShortName,
                 migrationLongName,
-                migrationFolderAbsolutePath);
+                migrationFolderAbsolutePath,
+                language);
         }
 
         public static IEnumerable<IClass> FindInheritorsOf(this IPsiModule module, IProject project, IClrTypeName clrTypeName)
@@ -45,8 +52,6 @@ namespace Rider.Plugins.EfCore.Migrations
             var psiServices = module.GetPsiServices();
             var symbolScope = psiServices.Symbols.GetSymbolScope(module, true, true); // caseSensitive should probably come the project language service
             var typeElement = symbolScope.GetTypeElementByCLRName(clrTypeName);
-
-            var a = symbolScope.GetTypeElementsByCLRName(EfCoreKnownTypeNames.MigrationBaseClass);
 
             if (typeElement == null)
             {

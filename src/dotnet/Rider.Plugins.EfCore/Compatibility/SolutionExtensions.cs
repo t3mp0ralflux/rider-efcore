@@ -6,14 +6,8 @@ namespace Rider.Plugins.EfCore.Compatibility
 {
     public static class SolutionExtensions
     {
-        public static IEnumerable<IProject> GetSupportedMigrationProjects(this ISolution solution)
-        {
-            var supportedMigrationProjects = solution
-                .GetSupportedDotnetProjects(tfId => tfId.IsSupportedInMigrationsProject())
-                .Where(project => project.ProjectFileLocation.ExtensionNoDot == "csproj");
-
-            return supportedMigrationProjects;
-        }
+        public static IEnumerable<IProject> GetSupportedMigrationProjects(this ISolution solution) =>
+            solution.GetSupportedDotnetProjects(tfId => tfId.IsSupportedInMigrationsProject());
 
         public static IEnumerable<IProject> GetSupportedStartupProjects(this ISolution solution)
         {
